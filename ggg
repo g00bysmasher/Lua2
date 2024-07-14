@@ -1,0 +1,67 @@
+-- Get the player
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Set the character's walk speed
+humanoid.WalkSpeed = 50 -- Increase walk speed to 50 (adjust as needed)
+
+-- Set the movement direction
+local direction = Vector3.new(0, 1, 0) -- Move upwards
+
+-- Define the movement speed (slower speed)
+local speed = 8 -- Adjust the speed as needed
+
+-- Define the duration for the initial movement (1 second)
+local moveDuration = 1 -- Move for 1 second
+
+-- Define the initial rotation speed
+local initialRotationSpeed = 1 -- Starting rotation speed
+
+-- Define the maximum rotation speed
+local maxRotationSpeed = 50 -- Maximum rotation speed (adjust as needed)
+
+-- Define the acceleration rate (how much to increase speed per second)
+local accelerationRate = 8 -- Adjust the acceleration rate as needed
+
+-- Define the total spin duration
+local spinDuration = 10 -- Spin for 10 seconds (adjust as needed)
+
+-- Function to move the character upwards
+local function moveUpwards()
+    local startTime = tick()
+    while tick() - startTime < moveDuration do
+        -- Apply the movement
+        character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(direction * speed * wait())
+    end
+
+    -- Create a BodyPosition to hold the character in place
+    local bodyPosition = Instance.new("BodyPosition")
+    bodyPosition.Parent = character.HumanoidRootPart
+    bodyPosition.Position = character.HumanoidRootPart.Position
+    bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+
+    -- Function to gradually increase rotation speed
+    local function increaseRotationSpeed()
+        local currentRotationSpeed = initialRotationSpeed
+        local startTime = tick()
+        while tick() - startTime < spinDuration do
+            -- Increase rotation speed gradually
+            currentRotationSpeed = currentRotationSpeed + accelerationRate * wait()
+            if currentRotationSpeed > maxRotationSpeed then
+                currentRotationSpeed = maxRotationSpeed
+            end
+            -- Rotate the character
+            character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(currentRotationSpeed), 0)
+        end
+        -- After spinning, stop the BodyPosition and unfreeze the character
+        bodyPosition:Destroy()
+        humanoid.PlatformStand = false
+    end
+
+    -- Start increasing rotation speed after 1 second
+    spawn(increaseRotationSpeed)
+end
+
+-- Start moving upwards
+moveUpwards()
